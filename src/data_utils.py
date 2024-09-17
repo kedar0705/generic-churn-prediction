@@ -25,4 +25,3 @@ def preprocess_data(df: pd.DataFrame):
     X_scaled = scaler.fit_transform(X)
     
     return X_scaled, y, label_encoders, scaler
-    return X_scaled, y, label_encoders, scaler
