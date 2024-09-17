@@ -1,9 +1,21 @@
 import os
 import pickle
 
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
+
+def load_model(model_path):
+    with open(model_path, 'rb') as f:
+        model = pickle.load(f)
+    return model
+# def load_model(model_path):
+#     return joblib.load(model_path)
+
+def predict(input_data, model):
+    input_data = np.array(input_data).reshape(1, -1)  # Reshape for a single prediction
+    return model.predict(input_data)
 
 def train_model(X, y, model_name: str, model_type='random_forest'):
     """Train a machine learning model and save it."""
@@ -43,3 +55,4 @@ for dataset in datasets:
     X, y, _, _ = preprocess_data(df)
     accuracy = train_model(X, y, model_name=dataset)
     print(f'Trained {dataset} model with accuracy: {accuracy}')
+    
