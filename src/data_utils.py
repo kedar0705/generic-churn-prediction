@@ -1,35 +1,28 @@
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 
-def preprocess_data(df):
-    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
-    imputer = SimpleImputer(strategy='median')
-    df[numeric_cols] = imputer.fit_transform(df[numeric_cols])
+def load_data(file_path: str):
+    """Loads CSV data from the provided path."""
+    return pd.read_csv(file_path)
+
+def preprocess_data(df: pd.DataFrame):
+    """Generic preprocessing for churn datasets with feature scaling and label encoding."""
+    df = df.dropna()  # Drop missing values
+    target = 'churn' if 'churn' in df.columns else df.columns[-1]  # Assumes target is last column if not named
     
-    categorical_cols = df.select_dtypes(include=['object']).columns
-    imputer_cat = SimpleImputer(strategy='most_frequent')
-    df[categorical_cols] = imputer_cat.fit_transform(df[categorical_cols])
+    # Encoding categorical features
+    label_encoders = {}
+    for col in df.select_dtypes(include=['object']).columns:
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+        label_encoders[col] = le
     
-    label_enc_cols = ['gender', 'hascrcard', 'isactivemember', 'churn'] 
-    for col in label_enc_cols:
-        if col in df.columns:
-            le = LabelEncoder()
-            df[col] = le.fit_transform(df[col])
-    
-    df = pd.get_dummies(df, columns=['geography'], drop_first=True)
-    
+    # Feature Scaling
     scaler = StandardScaler()
-    df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+    X = df.drop(columns=[target])
+    y = df[target]
+    X_scaled = scaler.fit_transform(X)
     
-    return df
-
-if __name__ == "__main__":
-    df = pd.read_csv("/home/user/Kedar/generic-churn-prediction/churn_data/Bank_churn.csv")
-    df_preprocessed = preprocess_data(df)
-    print(df_preprocessed.head())
-    df_preprocessed = preprocess_data(df)
-    print(df_preprocessed.head())
+    return X_scaled, y, label_encoders, scaler
+    return X_scaled, y, label_encoders, scaler
